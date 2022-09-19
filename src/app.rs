@@ -39,11 +39,19 @@ impl<'a> App<'a> {
         if key.code == KeyCode::Char('c') && key.modifiers == KeyModifiers::CONTROL {
             self.should_quit = true
         }
+        if self.show_help && key.code != KeyCode::Char('q') && self.show_help {
+            return;
+        }
         match key.code {
             KeyCode::Char('q') => {
-                self.should_quit = true;
-                self.history.save_csv(HISTORY_FILE_PATH);
+                if self.show_help {
+                    self.show_help = false;
+                } else {
+                    self.should_quit = true;
+                    self.history.save_csv(HISTORY_FILE_PATH);
+                }
             }
+            KeyCode::Char('?') | KeyCode::Char('h') => self.show_help = true,
             KeyCode::Char('c') => self.history.clear(),
             KeyCode::Char('s') => self.history.save_csv(HISTORY_FILE_PATH),
             KeyCode::Char('r') => self.scramble = Scramble::new_rand(SCRAMBLE_LEN),
