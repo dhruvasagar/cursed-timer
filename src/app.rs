@@ -39,7 +39,8 @@ impl<'a> App<'a> {
 
     pub fn on_key(&mut self, key: KeyEvent) {
         if key.code == KeyCode::Char('c') && key.modifiers == KeyModifiers::CONTROL {
-            self.should_quit = true
+            self.should_quit = true;
+            return;
         }
         if self.show_help && key.code != KeyCode::Char('q') {
             return;
