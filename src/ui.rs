@@ -21,7 +21,6 @@ pub fn draw<B: Backend>(f: &mut Frame<B>, app: &App) {
 
 pub fn draw_help<B: Backend>(f: &mut Frame<B>) {
     let chunks = Layout::default()
-        .margin(1)
         .constraints([Constraint::Percentage(100)].as_ref())
         .split(f.size());
     let help_block = Block::default()
@@ -29,14 +28,15 @@ pub fn draw_help<B: Backend>(f: &mut Frame<B>) {
         .title_alignment(Alignment::Center)
         .borders(Borders::ALL);
     let text = vec![
-        Spans::from("?: Show Help"),
-        Spans::from("q: Quit Help / Quit Application"),
-        Spans::from("c: Clear History"),
-        Spans::from("s: Save History to file"),
-        Spans::from("r: Refresh Scramble"),
-        Spans::from("x: Delete last recorded time from History"),
-        Spans::from("u: Undo delete from History"),
-        Spans::from("<Space>: Start / Stop Timer"),
+        Spans::from(""),
+        Spans::from("    ?: Show Help"),
+        Spans::from("    q: Quit Help / Quit Application"),
+        Spans::from("    c: Clear History"),
+        Spans::from("    s: Save History to file"),
+        Spans::from("    r: Refresh Scramble"),
+        Spans::from("    x: Delete last recorded time from History"),
+        Spans::from("    u: Undo delete from History"),
+        Spans::from("    <Space>: Start / Stop Timer"),
     ];
     let paragraph = Paragraph::new(text).block(help_block);
     f.render_widget(paragraph, chunks[0]);
@@ -44,7 +44,6 @@ pub fn draw_help<B: Backend>(f: &mut Frame<B>) {
 
 pub fn draw_timer_active<B: Backend>(f: &mut Frame<B>, app: &App) {
     let chunks = Layout::default()
-        .margin(1)
         .constraints([Constraint::Percentage(100)].as_ref())
         .split(f.size());
     let timer_block = Block::default()
@@ -70,7 +69,6 @@ pub fn draw_timer_active<B: Backend>(f: &mut Frame<B>, app: &App) {
 pub fn draw_timer_inactive<B: Backend>(f: &mut Frame<B>, app: &App) {
     let chunks = Layout::default()
         .direction(Direction::Horizontal)
-        .margin(1)
         .constraints([Constraint::Percentage(20), Constraint::Percentage(80)].as_ref())
         .split(f.size());
 

@@ -141,9 +141,11 @@ impl History {
 
         let mut best: Duration = Duration::from_secs(0);
         let mut tot: Duration = Duration::from_secs(0);
+
         let mut ao5: Duration = Duration::from_secs(0);
         let mut cao5: Duration = Duration::from_secs(0);
         let mut lao5: Vec<Duration> = vec![];
+
         let mut ao12: Duration = Duration::from_secs(0);
         let mut cao12: Duration = Duration::from_secs(0);
         let mut lao12: Vec<Duration> = vec![];
