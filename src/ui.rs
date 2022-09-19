@@ -5,7 +5,7 @@ use tui::{
     layout::{Alignment, Constraint, Direction, Layout},
     style::{Color, Modifier, Style},
     text::{Span, Spans, Text},
-    widgets::{Block, Borders, List, ListItem, Paragraph},
+    widgets::{Block, Borders, Cell, List, ListItem, Paragraph, Row, Table},
     Frame,
 };
 
@@ -85,9 +85,27 @@ pub fn draw_timer_inactive<B: Backend>(f: &mut Frame<B>, app: &App) {
     f.render_widget(list, left_chunks[0]);
 
     let stats = app.history.stats();
-    let items: Vec<ListItem> = stats.iter().map(|s| ListItem::new(s.as_str())).collect();
-    let list = List::new(items).block(left_bottom_pane);
-    f.render_widget(list, left_chunks[1]);
+    let mut rows: Vec<Row> = vec![];
+    for stat in stats.iter() {
+        let mut row: Vec<Cell> = vec![];
+        for val in stat.iter() {
+            row.push(Cell::from(val.as_str()));
+        }
+        rows.push(Row::new(row));
+    }
+    let table = Table::new(rows)
+        .header(Row::new(vec!["", "current", "best"]))
+        .block(left_bottom_pane)
+        .widths(
+            [
+                Constraint::Percentage(33),
+                Constraint::Percentage(33),
+                Constraint::Percentage(33),
+            ]
+            .as_ref(),
+        )
+        .column_spacing(1);
+    f.render_widget(table, left_chunks[1]);
 
     let scramble_text = Spans::from(vec![Span::styled(
         format!("{}", app.scramble.to_string().as_str()),

@@ -133,12 +133,13 @@ impl History {
         self.entries.len()
     }
 
-    pub fn stats(&self) -> Vec<String> {
+    pub fn stats(&self) -> Vec<Vec<String>> {
         let size = self.len();
         if size == 0 {
             return vec![];
         }
 
+        let mut best: Duration = Duration::from_secs(0);
         let mut tot: Duration = Duration::from_secs(0);
         let mut ao5: Duration = Duration::from_secs(0);
         let mut cao5: Duration = Duration::from_secs(0);
@@ -148,8 +149,12 @@ impl History {
         let mut lao12: Vec<Duration> = vec![];
         // let mut ao50 = 0;
         // let mut ao100 = 0;
+        let SolveTime(last) = self.entries.last().unwrap().time;
         for entry in self.entries.iter() {
             let SolveTime(d) = entry.time;
+            if best == Duration::from_secs(0) || best > d {
+                best = d;
+            }
             tot = tot.add(d);
             lao5.push(d);
             if lao5.len() == 5 {
@@ -171,11 +176,21 @@ impl History {
             }
         }
         vec![
-            format!("Average: {:?}", tot.div(size as u32)),
-            format!("Current Ao5: {:?}", cao5),
-            format!("Best Ao5: {:?}", ao5),
-            format!("Current Ao12: {:?}", cao12),
-            format!("Best Ao12: {:?}", ao12),
+            vec![
+                String::from("time"),
+                format!("{:?}", last),
+                format!("{:?}", tot.div(size as u32)),
+            ],
+            vec![
+                String::from("ao5"),
+                format!("{:?}", cao5),
+                format!("{:?}", ao5),
+            ],
+            vec![
+                String::from("ao12"),
+                format!("{:?}", cao12),
+                format!("{:?}", ao12),
+            ],
         ]
     }
 }
