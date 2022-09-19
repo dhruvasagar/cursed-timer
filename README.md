@@ -4,4 +4,4 @@ A simple Console Timer Application for Recording Rubik Cube Solving Times
 
 # Demo
 
-[![asciicast](https://asciinema.org/a/OQ2bEK2fRjW8567RHHzZf08bW.png)](https://asciinema.org/a/OQ2bEK2fRjW8567RHHzZf08bW)
+<script src="https://asciinema.org/a/OQ2bEK2fRjW8567RHHzZf08bW.js" id="asciicast-OQ2bEK2fRjW8567RHHzZf08bW" async></script>
