@@ -1,7 +1,7 @@
 use crate::{
     history::History,
     scramble::Scramble,
-    time::{State, Timer},
+    timer::{State, Timer},
     ui,
 };
 use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyModifiers};
@@ -16,6 +16,7 @@ pub struct App<'a> {
     pub title: &'a str,
     pub should_quit: bool,
     pub tick_rate: Duration,
+    pub inspection: Duration,
     pub timer: Timer,
     pub history: History,
     pub scramble: Scramble,
@@ -32,6 +33,7 @@ impl<'a> App<'a> {
             tick_rate: Duration::from_millis(200),
             scramble: Scramble::new_rand(SCRAMBLE_LEN),
             history: History::from_csv(HISTORY_FILE_PATH),
+            inspection: Duration::from_secs(15),
         }
     }
 

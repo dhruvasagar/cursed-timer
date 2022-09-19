@@ -10,7 +10,7 @@ use tui::{backend::CrosstermBackend, Terminal};
 mod app;
 mod history;
 mod scramble;
-mod time;
+mod timer;
 mod ui;
 
 fn main() -> io::Result<()> {

@@ -1,4 +1,4 @@
-use crate::{app::App, time::State};
+use crate::{app::App, timer::State};
 use cfonts::{render, Fonts, Options};
 use tui::{
     backend::Backend,

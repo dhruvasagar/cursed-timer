@@ -20,8 +20,7 @@ use chrono;
 use chrono::prelude::*;
 use csv;
 
-use super::scramble::Scramble;
-use super::time::Timer;
+use crate::{scramble::Scramble, timer::Timer};
 
 pub struct SolveTime(Duration);
 
