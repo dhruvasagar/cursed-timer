@@ -134,7 +134,7 @@ impl History {
     }
 
     pub fn stats(&self) -> Vec<Vec<String>> {
-        let size = self.len();
+        let size = self.len() as u32;
         if size == 0 {
             return vec![];
         }
@@ -177,19 +177,25 @@ impl History {
         }
         vec![
             vec![
-                String::from("time"),
+                String::from("Time"),
                 format!("{:?}", last),
-                format!("{:?}", tot.div(size as u32)),
+                format!("{:?}", best),
             ],
             vec![
-                String::from("ao5"),
+                String::from("Ao5"),
                 format!("{:?}", cao5),
                 format!("{:?}", ao5),
             ],
             vec![
-                String::from("ao12"),
+                String::from("Ao12"),
                 format!("{:?}", cao12),
                 format!("{:?}", ao12),
+            ],
+            vec![],
+            vec![
+                String::from("Average"),
+                String::from(""),
+                format!("{:?}", tot.div(size)),
             ],
         ]
     }
