@@ -41,7 +41,7 @@ impl<'a> App<'a> {
         if key.code == KeyCode::Char('c') && key.modifiers == KeyModifiers::CONTROL {
             self.should_quit = true
         }
-        if self.show_help && key.code != KeyCode::Char('q') && self.show_help {
+        if self.show_help && key.code != KeyCode::Char('q') {
             return;
         }
         match key.code {
