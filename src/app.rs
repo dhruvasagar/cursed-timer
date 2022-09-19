@@ -51,7 +51,7 @@ impl<'a> App<'a> {
                     self.history.save_csv(HISTORY_FILE_PATH);
                 }
             }
-            KeyCode::Char('?') | KeyCode::Char('h') => self.show_help = true,
+            KeyCode::F(1) | KeyCode::Char('?') | KeyCode::Char('h') => self.show_help = true,
             KeyCode::Char('c') => self.history.clear(),
             KeyCode::Char('s') => self.history.save_csv(HISTORY_FILE_PATH),
             KeyCode::Char('r') => self.scramble = Scramble::new_rand(SCRAMBLE_LEN),
