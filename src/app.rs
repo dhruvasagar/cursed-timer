@@ -12,7 +12,7 @@ use tui::{backend::Backend, Terminal};
 
 const SCRAMBLE_LEN: usize = 25;
 const HISTORY_FILE_PATH: &str = "history.csv";
-const WCA_INSPECTION: u64 = 15;
+const WCA_INSPECTION: u64 = 16;
 
 #[derive(PartialEq, Eq)]
 pub enum AppState {
@@ -42,7 +42,7 @@ impl<'a> App<'a> {
             tick_rate: Duration::from_millis(100),
             scramble: Scramble::new_rand(SCRAMBLE_LEN),
             history: History::from_csv(HISTORY_FILE_PATH),
-            countdown: Countdown::new(Duration::from_secs(0)),
+            countdown: Countdown::new(Duration::from_secs(WCA_INSPECTION)),
         }
     }
 

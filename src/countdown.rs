@@ -43,7 +43,9 @@ impl fmt::Display for Countdown {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let current = match self.state {
             CountdownState::Done => Duration::from_secs(0),
-            CountdownState::Start | CountdownState::Stop => self.time.elapsed().unwrap(),
+            CountdownState::Start | CountdownState::Stop => {
+                self.duration - self.time.elapsed().unwrap()
+            }
             _ => self.duration,
         }
         .as_secs();
