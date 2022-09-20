@@ -9,7 +9,7 @@ use tui::{
     Frame,
 };
 
-pub fn draw_timer_inactive<B: Backend>(f: &mut Frame<B>, app: &App) {
+pub fn draw_idle<B: Backend>(f: &mut Frame<B>, app: &App) {
     let chunks = Layout::default()
         .direction(Direction::Horizontal)
         .constraints([Constraint::Percentage(20), Constraint::Percentage(80)].as_ref())

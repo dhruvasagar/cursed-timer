@@ -1,5 +1,6 @@
 use crate::{
-    history::History,
+    countdown::Countdown,
+    history::{History, Penalty},
     scramble::Scramble,
     timer::{State, Timer},
     ui,
@@ -11,16 +12,25 @@ use tui::{backend::Backend, Terminal};
 
 const SCRAMBLE_LEN: usize = 25;
 const HISTORY_FILE_PATH: &str = "history.csv";
+const WCA_INSPECTION: u64 = 15;
+
+#[derive(PartialEq, Eq)]
+pub enum AppState {
+    Idle,
+    Inspecting,
+    Timer,
+    ShowHelp,
+    ShouldQuit,
+}
 
 pub struct App<'a> {
     pub title: &'a str,
-    pub should_quit: bool,
     pub tick_rate: Duration,
-    pub inspection: Duration,
     pub timer: Timer,
     pub history: History,
     pub scramble: Scramble,
-    pub show_help: bool,
+    pub state: AppState,
+    pub countdown: Countdown,
 }
 
 impl<'a> App<'a> {
@@ -28,46 +38,57 @@ impl<'a> App<'a> {
         App {
             title,
             timer: Timer::new(),
-            show_help: false,
-            should_quit: false,
-            tick_rate: Duration::from_millis(200),
+            state: AppState::Idle,
+            tick_rate: Duration::from_millis(100),
             scramble: Scramble::new_rand(SCRAMBLE_LEN),
             history: History::from_csv(HISTORY_FILE_PATH),
-            inspection: Duration::from_secs(15),
+            countdown: Countdown::new(Duration::from_secs(0)),
         }
     }
 
     pub fn on_key(&mut self, key: KeyEvent) {
         if key.code == KeyCode::Char('c') && key.modifiers == KeyModifiers::CONTROL {
-            self.should_quit = true;
+            self.state = AppState::ShouldQuit;
             return;
         }
-        if self.show_help && key.code != KeyCode::Char('q') {
-            return;
-        }
-        match key.code {
-            KeyCode::Char('q') => {
-                if self.show_help {
-                    self.show_help = false;
-                } else {
-                    self.should_quit = true;
-                    self.history.save_csv(HISTORY_FILE_PATH);
+        match self.state {
+            AppState::ShowHelp => {
+                if key.code == KeyCode::Char('q') {
+                    self.state = AppState::Idle;
                 }
             }
-            KeyCode::F(1) | KeyCode::Char('?') | KeyCode::Char('h') => self.show_help = true,
-            KeyCode::Char('c') => self.history.clear(),
-            KeyCode::Char('s') => self.history.save_csv(HISTORY_FILE_PATH),
-            KeyCode::Char('r') => self.scramble = Scramble::new_rand(SCRAMBLE_LEN),
-            KeyCode::Char('x') => self.history.pop(),
-            KeyCode::Char('u') => self.history.undo_pop(),
-            KeyCode::Char(' ') => match self.timer.state {
-                State::Active => {
-                    self.timer.stop();
-                    self.history.push(&self.timer, &self.scramble);
-                    self.scramble = Scramble::new_rand(SCRAMBLE_LEN);
+            AppState::Idle => match key.code {
+                KeyCode::F(1) | KeyCode::Char('?') | KeyCode::Char('h') => {
+                    self.state = AppState::ShowHelp
                 }
-                _ => self.timer.start(),
+                KeyCode::Char('c') => self.history.clear(),
+                KeyCode::Char('s') => self.history.save_csv(HISTORY_FILE_PATH),
+                KeyCode::Char('r') => self.scramble = Scramble::new_rand(SCRAMBLE_LEN),
+                KeyCode::Char('x') => self.history.pop(),
+                KeyCode::Char('u') => self.history.undo_pop(),
+                KeyCode::Char(' ') => {
+                    self.state = AppState::Inspecting;
+                    self.countdown.start();
+                }
+                KeyCode::Char('q') => {
+                    self.state = AppState::ShouldQuit;
+                    self.history.save_csv(HISTORY_FILE_PATH);
+                }
+                _ => {}
             },
+            AppState::Inspecting => {
+                if key.code == KeyCode::Char(' ') {
+                    self.state = AppState::Timer;
+                    self.countdown.stop();
+                    self.timer.start();
+                }
+            }
+            AppState::Timer => {
+                self.state = AppState::Idle;
+                self.timer.stop();
+                self.history.push(&self.timer, &self.scramble, Penalty::No);
+                self.scramble = Scramble::new_rand(SCRAMBLE_LEN);
+            }
             _ => {}
         }
     }
@@ -89,7 +110,7 @@ impl<'a> App<'a> {
             if last_tick.elapsed() >= self.tick_rate {
                 last_tick = Instant::now();
             }
-            if self.should_quit {
+            if self.state == AppState::ShouldQuit {
                 return Ok(());
             }
         }

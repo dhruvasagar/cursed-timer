@@ -8,6 +8,7 @@ use std::io;
 use tui::{backend::CrosstermBackend, Terminal};
 
 mod app;
+mod countdown;
 mod history;
 mod scramble;
 mod timer;

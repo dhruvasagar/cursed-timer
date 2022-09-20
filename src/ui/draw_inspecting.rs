@@ -9,7 +9,7 @@ use tui::{
     Frame,
 };
 
-pub fn draw_timer_active<B: Backend>(f: &mut Frame<B>, app: &App) {
+pub fn draw_inspecting<B: Backend>(f: &mut Frame<B>, app: &App) {
     let chunks = Layout::default()
         .constraints([Constraint::Percentage(100)].as_ref())
         .split(f.size());
@@ -19,7 +19,7 @@ pub fn draw_timer_active<B: Backend>(f: &mut Frame<B>, app: &App) {
         .borders(Borders::ALL);
 
     let timer_font = render(Options {
-        text: app.timer.to_string(),
+        text: app.countdown.to_string(),
         font: Fonts::FontHuge,
         ..Options::default()
     });

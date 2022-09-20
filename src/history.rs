@@ -37,10 +37,38 @@ impl fmt::Display for SolveTime {
     }
 }
 
+#[derive(Debug)]
+pub enum Penalty {
+    No,
+    DNS,
+    DNF,
+    Time,
+}
+
+impl str::FromStr for Penalty {
+    type Err = ();
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "No" => Ok(Penalty::No),
+            "DNS" => Ok(Penalty::DNS),
+            "DNF" => Ok(Penalty::DNF),
+            "Time" => Ok(Penalty::Time),
+            _ => Err(()),
+        }
+    }
+}
+
+impl fmt::Display for Penalty {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{:?}", self)
+    }
+}
+
 struct Entry {
     time: SolveTime,
     scramble: Scramble,
     date: chrono::DateTime<Utc>,
+    penalty: Penalty,
 }
 
 pub struct History {
@@ -63,6 +91,7 @@ impl History {
                     time: record[0].parse::<SolveTime>().unwrap(),
                     scramble: record[1].parse::<Scramble>().unwrap(),
                     date: record[2].parse::<chrono::DateTime<Utc>>().unwrap(),
+                    penalty: record[3].parse::<Penalty>().unwrap(),
                 })
             }
         }
@@ -71,23 +100,25 @@ impl History {
 
     pub fn save_csv(&self, file_path: &str) {
         let mut writter = csv::Writer::from_path(file_path).unwrap();
-        writter.write_record(&["time", "scramble", "date"]).unwrap();
+        writter
+            .write_record(&["time", "scramble", "date", "penalty"])
+            .unwrap();
         for entry in &self.entries {
             writter
                 .write_record(&[
                     entry.time.to_string(),
                     entry.scramble.to_string(),
                     entry.date.to_string(),
+                    entry.penalty.to_string(),
                 ])
                 .unwrap();
         }
         writter.flush().unwrap();
     }
 
-    pub fn summarize(&self, n: usize) -> Vec<String> {
+    pub fn summarize(&self) -> Vec<String> {
         self.entries
             .iter()
-            .skip(self.entries.len() - n)
             .map(|Entry { time, .. }| time.to_string())
             .collect()
     }
@@ -104,11 +135,12 @@ impl History {
         }
     }
 
-    pub fn push(&mut self, timer: &Timer, scramble: &Scramble) {
+    pub fn push(&mut self, timer: &Timer, scramble: &Scramble, penalty: Penalty) {
         self.entries.push(Entry {
             time: SolveTime(timer.result),
             scramble: scramble.clone(),
             date: chrono::offset::Utc::now(),
+            penalty,
         });
     }
 
@@ -116,12 +148,8 @@ impl History {
         self.entries.clear()
     }
 
-    pub fn len(&self) -> usize {
-        self.entries.len()
-    }
-
     pub fn stats(&self) -> Vec<Vec<String>> {
-        let size = self.len() as u32;
+        let size = self.entries.len() as u32;
         if size == 0 {
             return vec![];
         }
