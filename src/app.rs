@@ -2,7 +2,7 @@ use crate::{
     countdown::Countdown,
     history::{History, Penalty},
     scramble::Scramble,
-    timer::{State, Timer},
+    timer::Timer,
     ui,
 };
 use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyModifiers};

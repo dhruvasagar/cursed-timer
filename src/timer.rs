@@ -2,7 +2,6 @@ use std::time::{Duration, SystemTime};
 
 #[derive(Copy, Clone, PartialEq)]
 pub enum State {
-    Idle,
     Active,
     Inactive,
 }
@@ -31,10 +30,6 @@ impl Timer {
     pub fn stop(&mut self) {
         self.result = self.time.elapsed().unwrap();
         self.state = State::Inactive;
-    }
-
-    pub fn idle(&mut self) {
-        self.state = State::Idle;
     }
 }
 
