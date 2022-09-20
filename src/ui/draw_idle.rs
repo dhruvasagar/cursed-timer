@@ -1,11 +1,16 @@
 use crate::app::App;
 use cfonts::{render, Fonts, Options};
+use chrono::NaiveDateTime;
 use tui::{
     backend::Backend,
     layout::{Alignment, Constraint, Direction, Layout},
     style::{Color, Modifier, Style},
+    symbols::Marker::Dot,
     text::{Span, Spans, Text},
-    widgets::{Block, Borders, Cell, List, ListItem, Paragraph, Row, Table},
+    widgets::{
+        Axis, Block, Borders, Cell, Chart, Dataset, List, ListItem, ListState, Paragraph, Row,
+        Table,
+    },
     Frame,
 };
 
@@ -17,7 +22,14 @@ pub fn draw_idle<B: Backend>(f: &mut Frame<B>, app: &App) {
 
     let left_chunks = Layout::default()
         .direction(Direction::Vertical)
-        .constraints([Constraint::Percentage(50), Constraint::Percentage(50)].as_ref())
+        .constraints(
+            [
+                Constraint::Percentage(33),
+                Constraint::Percentage(33),
+                Constraint::Percentage(33),
+            ]
+            .as_ref(),
+        )
         .split(chunks[0]);
 
     let right_chunks = Layout::default()
@@ -29,8 +41,12 @@ pub fn draw_idle<B: Backend>(f: &mut Frame<B>, app: &App) {
         .title("History")
         .title_alignment(Alignment::Center)
         .borders(Borders::ALL);
-    let left_bottom_pane = Block::default()
+    let left_middle_pane = Block::default()
         .title("Stats")
+        .title_alignment(Alignment::Center)
+        .borders(Borders::ALL);
+    let left_bottom_pane = Block::default()
+        .title("Plot")
         .title_alignment(Alignment::Center)
         .borders(Borders::ALL);
     let right_top_pane = Block::default()
@@ -49,7 +65,9 @@ pub fn draw_idle<B: Backend>(f: &mut Frame<B>, app: &App) {
         .map(|(i, h)| ListItem::new(format!("{}: {}", i + 1, h)))
         .collect();
     let list = List::new(items).block(left_top_pane);
-    f.render_widget(list, left_chunks[0]);
+    let mut state = ListState::default();
+    state.select(Some(summary.len() as usize - 1));
+    f.render_stateful_widget(list, left_chunks[0], &mut state);
 
     let stats = app.history.stats();
     let mut rows: Vec<Row> = vec![];
@@ -62,7 +80,7 @@ pub fn draw_idle<B: Backend>(f: &mut Frame<B>, app: &App) {
     }
     let table = Table::new(rows)
         .header(Row::new(vec!["", "current", "best"]))
-        .block(left_bottom_pane)
+        .block(left_middle_pane)
         .widths(
             [
                 Constraint::Percentage(33),
@@ -73,6 +91,47 @@ pub fn draw_idle<B: Backend>(f: &mut Frame<B>, app: &App) {
         )
         .column_spacing(1);
     f.render_widget(table, left_chunks[1]);
+
+    let (points, xbounds, ybounds) = app.history.points();
+    let datasets = vec![Dataset::default()
+        .name("Solve Times")
+        .marker(Dot)
+        .style(Style::default().fg(Color::Cyan))
+        .data(&points)];
+    let chart = Chart::new(datasets)
+        .block(left_bottom_pane)
+        .x_axis(
+            Axis::default()
+                .title("Time")
+                .style(Style::default().fg(Color::White))
+                .bounds(xbounds)
+                .labels(
+                    xbounds
+                        .iter()
+                        .cloned()
+                        .map(|x| {
+                            Span::from(format!(
+                                "{}",
+                                NaiveDateTime::from_timestamp(x as i64, 0).format("%H:%M:%S")
+                            ))
+                        })
+                        .collect(),
+                ),
+        )
+        .y_axis(
+            Axis::default()
+                .title("Solve Times")
+                .style(Style::default().fg(Color::White))
+                .bounds(ybounds)
+                .labels(
+                    ybounds
+                        .iter()
+                        .cloned()
+                        .map(|y| Span::from(format!("{}", y)))
+                        .collect(),
+                ),
+        );
+    f.render_widget(chart, left_chunks[2]);
 
     let scramble_text = Spans::from(vec![Span::styled(
         format!("{}", app.scramble.to_string().as_str()),

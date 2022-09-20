@@ -216,4 +216,25 @@ impl History {
             ],
         ]
     }
+
+    pub fn points(&self) -> (Vec<(f64, f64)>, [f64; 2], [f64; 2]) {
+        let mut points: Vec<(f64, f64)> = vec![];
+        let mut xs: Vec<f64> = vec![];
+        let mut ys: Vec<f64> = vec![];
+        for entry in self.entries.iter() {
+            let SolveTime(s) = entry.time;
+            ys.push(s.as_secs_f64());
+            xs.push(entry.date.timestamp() as f64);
+            points.push((entry.date.timestamp() as f64, s.as_secs_f64()));
+        }
+        let xbounds: [f64; 2] = [
+            xs.iter().copied().fold(f64::NAN, f64::min),
+            xs.iter().copied().fold(f64::NAN, f64::max),
+        ];
+        let ybounds: [f64; 2] = [
+            ys.iter().copied().fold(f64::NAN, f64::min),
+            ys.iter().copied().fold(f64::NAN, f64::max),
+        ];
+        (points, xbounds, ybounds)
+    }
 }
