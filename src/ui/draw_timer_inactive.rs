@@ -1,4 +1,4 @@
-use crate::{app::App, timer::State};
+use crate::app::App;
 use cfonts::{render, Fonts, Options};
 use tui::{
     backend::Backend,
@@ -8,63 +8,6 @@ use tui::{
     widgets::{Block, Borders, Cell, List, ListItem, Paragraph, Row, Table},
     Frame,
 };
-
-pub fn draw<B: Backend>(f: &mut Frame<B>, app: &App) {
-    if app.show_help {
-        return draw_help(f);
-    }
-    match app.timer.state {
-        State::Active => draw_timer_active(f, app),
-        _ => draw_timer_inactive(f, app),
-    }
-}
-
-pub fn draw_help<B: Backend>(f: &mut Frame<B>) {
-    let chunks = Layout::default()
-        .constraints([Constraint::Percentage(100)].as_ref())
-        .split(f.size());
-    let help_block = Block::default()
-        .title("Help")
-        .title_alignment(Alignment::Center)
-        .borders(Borders::ALL);
-    let text = vec![
-        Spans::from(""),
-        Spans::from("    ?: Show Help"),
-        Spans::from("    q: Quit Help / Quit Application"),
-        Spans::from("    c: Clear History"),
-        Spans::from("    s: Save History to file"),
-        Spans::from("    r: Refresh Scramble"),
-        Spans::from("    x: Delete last recorded time from History"),
-        Spans::from("    u: Undo delete from History"),
-        Spans::from("    <Space>: Start / Stop Timer"),
-    ];
-    let paragraph = Paragraph::new(text).block(help_block);
-    f.render_widget(paragraph, chunks[0]);
-}
-
-pub fn draw_timer_active<B: Backend>(f: &mut Frame<B>, app: &App) {
-    let chunks = Layout::default()
-        .constraints([Constraint::Percentage(100)].as_ref())
-        .split(f.size());
-    let timer_block = Block::default()
-        .title("Timer")
-        .title_alignment(Alignment::Center)
-        .borders(Borders::ALL);
-
-    let timer_font = render(Options {
-        text: app.timer.to_string(),
-        font: Fonts::FontHuge,
-        ..Options::default()
-    });
-    let timer_text = Text::styled(
-        format!("{}", timer_font.text),
-        Style::default().fg(Color::LightGreen),
-    );
-    let paragraph = Paragraph::new(timer_text)
-        .block(timer_block)
-        .alignment(Alignment::Center);
-    f.render_widget(paragraph, chunks[0]);
-}
 
 pub fn draw_timer_inactive<B: Backend>(f: &mut Frame<B>, app: &App) {
     let chunks = Layout::default()
@@ -99,7 +42,7 @@ pub fn draw_timer_inactive<B: Backend>(f: &mut Frame<B>, app: &App) {
         .title_alignment(Alignment::Center)
         .borders(Borders::ALL);
 
-    let summary = app.history.summarize(app.history.len());
+    let summary = app.history.summarize();
     let items: Vec<ListItem> = summary
         .iter()
         .enumerate()
