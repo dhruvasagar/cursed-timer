@@ -34,30 +34,20 @@ pub fn draw_idle<B: Backend>(f: &mut Frame<B>, app: &App) {
 
     let right_chunks = Layout::default()
         .direction(Direction::Vertical)
-        .constraints([Constraint::Percentage(20), Constraint::Percentage(80)].as_ref())
+        .constraints(
+            [
+                Constraint::Percentage(20),
+                Constraint::Percentage(60),
+                Constraint::Percentage(20),
+            ]
+            .as_ref(),
+        )
         .split(chunks[1]);
 
     let left_top_pane = Block::default()
         .title("History")
         .title_alignment(Alignment::Center)
         .borders(Borders::ALL);
-    let left_middle_pane = Block::default()
-        .title("Stats")
-        .title_alignment(Alignment::Center)
-        .borders(Borders::ALL);
-    let left_bottom_pane = Block::default()
-        .title("Plot")
-        .title_alignment(Alignment::Center)
-        .borders(Borders::ALL);
-    let right_top_pane = Block::default()
-        .title("Scramble")
-        .title_alignment(Alignment::Center)
-        .borders(Borders::ALL);
-    let right_bottom_pane = Block::default()
-        .title("Timer")
-        .title_alignment(Alignment::Center)
-        .borders(Borders::ALL);
-
     let summary = app.history.summarize();
     let items: Vec<ListItem> = summary
         .iter()
@@ -69,6 +59,10 @@ pub fn draw_idle<B: Backend>(f: &mut Frame<B>, app: &App) {
     state.select(Some(summary.len() as usize - 1));
     f.render_stateful_widget(list, left_chunks[0], &mut state);
 
+    let left_middle_pane = Block::default()
+        .title("Stats")
+        .title_alignment(Alignment::Center)
+        .borders(Borders::ALL);
     let stats = app.history.stats();
     let mut rows: Vec<Row> = vec![];
     for stat in stats.iter() {
@@ -92,6 +86,10 @@ pub fn draw_idle<B: Backend>(f: &mut Frame<B>, app: &App) {
         .column_spacing(1);
     f.render_widget(table, left_chunks[1]);
 
+    let left_bottom_pane = Block::default()
+        .title("Plot")
+        .title_alignment(Alignment::Center)
+        .borders(Borders::ALL);
     let (points, xbounds, ybounds) = app.history.points();
     let datasets = vec![Dataset::default()
         .name("Solve Times")
@@ -133,6 +131,10 @@ pub fn draw_idle<B: Backend>(f: &mut Frame<B>, app: &App) {
         );
     f.render_widget(chart, left_chunks[2]);
 
+    let right_top_pane = Block::default()
+        .title("Scramble")
+        .title_alignment(Alignment::Center)
+        .borders(Borders::ALL);
     let scramble_text = Spans::from(vec![Span::styled(
         format!("{}", app.scramble.to_string().as_str()),
         Style::default()
@@ -144,6 +146,10 @@ pub fn draw_idle<B: Backend>(f: &mut Frame<B>, app: &App) {
         .alignment(Alignment::Center);
     f.render_widget(paragraph, right_chunks[0]);
 
+    let right_middle_pane = Block::default()
+        .title("Timer")
+        .title_alignment(Alignment::Center)
+        .borders(Borders::ALL);
     let timer_font = render(Options {
         text: app.timer.to_string(),
         font: Fonts::FontHuge,
@@ -154,7 +160,25 @@ pub fn draw_idle<B: Backend>(f: &mut Frame<B>, app: &App) {
         Style::default().fg(Color::LightGreen),
     );
     let paragraph = Paragraph::new(timer_text)
-        .block(right_bottom_pane)
+        .block(right_middle_pane)
         .alignment(Alignment::Center);
     f.render_widget(paragraph, right_chunks[1]);
+
+    let right_bottom_pane = Block::default().borders(Borders::ALL);
+    let table = Table::new(vec![Row::new(vec![
+        "Press <Space> to Start Inspection",
+        "Press ? to Show Help",
+        "Press q to Quit Application",
+    ])])
+    .block(right_bottom_pane)
+    .widths(
+        [
+            Constraint::Percentage(33),
+            Constraint::Percentage(33),
+            Constraint::Percentage(33),
+        ]
+        .as_ref(),
+    )
+    .column_spacing(1);
+    f.render_widget(table, right_chunks[2]);
 }
