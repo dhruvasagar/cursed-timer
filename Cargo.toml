@@ -1,7 +1,13 @@
 [package]
 name = "cursed-timer"
+description = "A TUI Rubik Cube Timer"
+license = "MIT"
+readme = "README.md"
 version = "0.1.0"
 edition = "2021"
+repository = "https://github.com/dhruvasagar/cursed-timer"
+keywords = ["rubik", "cube", "timer", "tui"]
+authors = [ "Dhruva Sagar <dhruva.sagar@gmail.com>"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
