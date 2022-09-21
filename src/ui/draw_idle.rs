@@ -75,7 +75,7 @@ pub fn draw_idle<B: Backend>(f: &mut Frame<B>, app: &App) {
         rows.push(Row::new(row));
     }
     let table = Table::new(rows)
-        .header(Row::new(vec!["", "current", "best"]))
+        .header(Row::new(vec!["", "Current", "Best"]))
         .block(left_middle_pane)
         .widths(
             [
