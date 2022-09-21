@@ -96,13 +96,6 @@ impl<'a> App<'a> {
     pub fn run<B: Backend>(&mut self, terminal: &mut Terminal<B>) -> io::Result<()> {
         let mut last_tick = Instant::now();
         loop {
-            if self.state == AppState::Inspecting && self.countdown.done() {
-                self.state = AppState::Idle;
-                self.countdown.stop();
-                self.history.push(&self.timer, &self.scramble, Penalty::DNF);
-                self.scramble = Scramble::new_rand(SCRAMBLE_LEN);
-            }
-
             terminal.draw(|f| ui::draw(f, self))?;
 
             let timeout = self
@@ -113,6 +106,12 @@ impl<'a> App<'a> {
                 if let Event::Key(key) = event::read()? {
                     self.on_key(key)
                 }
+            }
+            if self.state == AppState::Inspecting && self.countdown.done() {
+                self.state = AppState::Idle;
+                self.countdown.stop();
+                self.history.push(&self.timer, &self.scramble, Penalty::DNS);
+                self.scramble = Scramble::new_rand(SCRAMBLE_LEN);
             }
             if last_tick.elapsed() >= self.tick_rate {
                 last_tick = Instant::now();
