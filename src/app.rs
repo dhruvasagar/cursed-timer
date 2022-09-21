@@ -15,12 +15,13 @@ const HISTORY_FILE_PATH: &str = "history.csv";
 const WCA_INSPECTION: u64 = 16;
 
 #[derive(PartialEq, Eq)]
-pub enum AppState {
+pub enum AppState<'a> {
     Idle,
     Inspecting,
     Timer,
     ShowHelp,
     ShouldQuit,
+    Confirm(&'a str),
 }
 
 pub struct App<'a> {
@@ -29,7 +30,7 @@ pub struct App<'a> {
     pub timer: Timer,
     pub history: History,
     pub scramble: Scramble,
-    pub state: AppState,
+    pub state: AppState<'a>,
     pub countdown: Countdown,
 }
 
@@ -64,7 +65,7 @@ impl<'a> App<'a> {
                 KeyCode::Char('c') => self.history.clear(),
                 KeyCode::Char('s') => self.history.save_csv(HISTORY_FILE_PATH),
                 KeyCode::Char('r') => self.scramble = Scramble::new_rand(SCRAMBLE_LEN),
-                KeyCode::Char('x') => self.history.pop(),
+                KeyCode::Char('x') => self.state = AppState::Confirm("pop"), // self.history.pop(),
                 KeyCode::Char('u') => self.history.undo_pop(),
                 KeyCode::Char(' ') => {
                     self.state = AppState::Inspecting;
@@ -88,6 +89,15 @@ impl<'a> App<'a> {
                 self.timer.stop();
                 self.history.push(&self.timer, &self.scramble, Penalty::No);
                 self.scramble = Scramble::new_rand(SCRAMBLE_LEN);
+            }
+            AppState::Confirm("pop") => {
+                match key.code {
+                    KeyCode::Char('y') => {
+                        self.history.pop();
+                    }
+                    _ => {}
+                };
+                self.state = AppState::Idle;
             }
             _ => {}
         }
