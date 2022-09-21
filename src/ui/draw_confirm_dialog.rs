@@ -13,13 +13,15 @@ use super::draw_idle;
 pub fn draw_confirm_dialog<B: Backend>(f: &mut Frame<B>, s: &str, app: &App) {
     draw_idle(f, app);
 
-    let area = centered_rect(40, 20, f.size());
+    let area = centered_rect(50, 20, f.size());
 
     let confirm_block = Block::default().borders(Borders::ALL);
     let confirm_message = match s {
         "pop" => "Are you sure you wish to delete last entry (y/n) ?",
         "dnf" => "Are you sure you wish to mark last entry as DNF (y/n) ?",
-        "time" => "Are you sure you wish to makr last entry as Time penalty (y/n) ?",
+        "time" => {
+            "Are you sure you wish to makr last entry as Time penalty, i.e. +2 seconds (y/n) ?"
+        }
         _ => "Are you sure (y/n) ?",
     };
     let text = Spans::from(vec![Span::styled(

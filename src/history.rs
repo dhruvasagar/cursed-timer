@@ -122,7 +122,7 @@ impl History {
         self.entries
             .iter()
             .map(|Entry { time, penalty, .. }| match penalty {
-                Penalty::No => time.to_string(),
+                Penalty::No | Penalty::Time => time.to_string(),
                 _ => penalty.to_string(),
             })
             .collect()
@@ -155,6 +155,9 @@ impl History {
 
     pub fn penalize(&mut self, index: usize, penalty: Penalty) {
         if let Some(last) = self.entries.get_mut(index) {
+            if penalty == Penalty::Time {
+                last.time = SolveTime(last.time.0.add(Duration::from_secs(2)));
+            }
             last.penalty = penalty;
         }
     }
@@ -166,7 +169,7 @@ impl History {
     pub fn valid_entries(&self) -> Vec<&Entry> {
         self.entries
             .iter()
-            .filter(|entry| entry.penalty == Penalty::No)
+            .filter(|entry| entry.penalty == Penalty::No || entry.penalty == Penalty::Time)
             .collect()
     }
 
