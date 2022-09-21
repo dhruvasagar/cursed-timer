@@ -30,6 +30,7 @@ pub fn draw_confirm_dialog<B: Backend>(f: &mut Frame<B>, app: &App) {
 fn centered_rect(percent_x: u16, percent_y: u16, r: Rect) -> Rect {
     let popup_layout = Layout::default()
         .direction(Direction::Vertical)
+        .margin(1)
         .constraints(
             [
                 Constraint::Percentage((100 - percent_y) / 2),
