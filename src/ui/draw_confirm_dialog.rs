@@ -24,10 +24,13 @@ pub fn draw_confirm_dialog<B: Backend>(f: &mut Frame<B>, s: &str, app: &App) {
     };
     let text = Spans::from(vec![Span::styled(
         confirm_message,
-        Style::default().fg(Color::Red).add_modifier(Modifier::BOLD),
+        Style::default()
+            .fg(Color::LightRed)
+            .add_modifier(Modifier::BOLD),
     )]);
     let paragraph = Paragraph::new(text)
         .alignment(Alignment::Center)
+        .style(Style::default().bg(Color::DarkGray))
         .block(confirm_block);
     f.render_widget(Clear, area);
     f.render_widget(paragraph, area);
