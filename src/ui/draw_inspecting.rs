@@ -23,10 +23,13 @@ pub fn draw_inspecting<B: Backend>(f: &mut Frame<B>, app: &App) {
         font: Fonts::FontHuge,
         ..Options::default()
     });
-    let timer_text = Text::styled(
+    let mut timer_text = Text::styled(
         format!("{}", timer_font.text),
         Style::default().fg(Color::LightGreen),
     );
+    if app.countdown.warn() {
+        timer_text.patch_style(Style::default().fg(Color::LightRed));
+    }
     let paragraph = Paragraph::new(timer_text)
         .block(timer_block)
         .alignment(Alignment::Center);

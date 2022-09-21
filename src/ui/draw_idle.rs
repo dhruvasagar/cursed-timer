@@ -56,7 +56,9 @@ pub fn draw_idle<B: Backend>(f: &mut Frame<B>, app: &App) {
         .collect();
     let list = List::new(items).block(left_top_pane);
     let mut state = ListState::default();
-    state.select(Some(summary.len() as usize - 1));
+    if summary.len() > 0 {
+        state.select(Some(summary.len() as usize - 1));
+    }
     f.render_stateful_widget(list, left_chunks[0], &mut state);
 
     let left_middle_pane = Block::default()

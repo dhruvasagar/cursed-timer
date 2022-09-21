@@ -96,6 +96,13 @@ impl<'a> App<'a> {
     pub fn run<B: Backend>(&mut self, terminal: &mut Terminal<B>) -> io::Result<()> {
         let mut last_tick = Instant::now();
         loop {
+            if self.state == AppState::Inspecting && self.countdown.done() {
+                self.state = AppState::Idle;
+                self.countdown.stop();
+                self.history.push(&self.timer, &self.scramble, Penalty::DNF);
+                self.scramble = Scramble::new_rand(SCRAMBLE_LEN);
+            }
+
             terminal.draw(|f| ui::draw(f, self))?;
 
             let timeout = self

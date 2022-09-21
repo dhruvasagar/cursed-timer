@@ -10,6 +10,7 @@ use csv;
 
 use crate::{scramble::Scramble, timer::Timer};
 
+#[derive(Clone)]
 pub struct SolveTime(Duration);
 
 impl str::FromStr for SolveTime {
@@ -37,7 +38,7 @@ impl fmt::Display for SolveTime {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub enum Penalty {
     No,
     DNS,
@@ -64,7 +65,8 @@ impl fmt::Display for Penalty {
     }
 }
 
-struct Entry {
+#[derive(Clone)]
+pub struct Entry {
     time: SolveTime,
     scramble: Scramble,
     date: chrono::DateTime<Utc>,
@@ -119,7 +121,10 @@ impl History {
     pub fn summarize(&self) -> Vec<String> {
         self.entries
             .iter()
-            .map(|Entry { time, .. }| time.to_string())
+            .map(|Entry { time, penalty, .. }| match penalty {
+                Penalty::No => time.to_string(),
+                _ => penalty.to_string(),
+            })
             .collect()
     }
 
@@ -148,8 +153,16 @@ impl History {
         self.entries.clear()
     }
 
+    pub fn valid_entries(&self) -> Vec<&Entry> {
+        self.entries
+            .iter()
+            .filter(|entry| entry.penalty == Penalty::No)
+            .collect()
+    }
+
     pub fn stats(&self) -> Vec<Vec<String>> {
-        let size = self.entries.len() as u32;
+        let entries = self.valid_entries();
+        let size = entries.len() as u32;
         if size == 0 {
             return vec![];
         }
@@ -166,8 +179,8 @@ impl History {
         let mut lao12: Vec<Duration> = vec![];
         // let mut ao50 = 0;
         // let mut ao100 = 0;
-        let SolveTime(last) = self.entries.last().unwrap().time;
-        for entry in self.entries.iter() {
+        let SolveTime(last) = entries.last().unwrap().time;
+        for entry in entries.iter() {
             let SolveTime(d) = entry.time;
             if best == Duration::from_secs(0) || best > d {
                 best = d;
@@ -221,7 +234,7 @@ impl History {
         let mut points: Vec<(f64, f64)> = vec![];
         let mut xs: Vec<f64> = vec![];
         let mut ys: Vec<f64> = vec![];
-        for entry in self.entries.iter() {
+        for entry in self.valid_entries().iter() {
             let SolveTime(s) = entry.time;
             ys.push(s.as_secs_f64());
             xs.push(entry.date.timestamp() as f64);
