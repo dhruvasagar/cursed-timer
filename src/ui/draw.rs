@@ -9,7 +9,7 @@ pub fn draw<B: Backend>(f: &mut Frame<B>, app: &App) {
         AppState::Idle => draw_idle(f, app),
         AppState::Inspecting => draw_inspecting(f, app),
         AppState::Timer => draw_timer(f, app),
-        AppState::Confirm(_) => draw_confirm_dialog(f, app),
+        AppState::Confirm(s) => draw_confirm_dialog(f, s, app),
         _ => {}
     }
 }

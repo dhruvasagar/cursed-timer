@@ -62,18 +62,20 @@ impl<'a> App<'a> {
                 KeyCode::F(1) | KeyCode::Char('?') | KeyCode::Char('h') => {
                     self.state = AppState::ShowHelp
                 }
-                KeyCode::Char('c') => self.history.clear(),
-                KeyCode::Char('s') => self.history.save_csv(HISTORY_FILE_PATH),
-                KeyCode::Char('r') => self.scramble = Scramble::new_rand(SCRAMBLE_LEN),
-                KeyCode::Char('x') => self.state = AppState::Confirm("pop"), // self.history.pop(),
-                KeyCode::Char('u') => self.history.undo_pop(),
-                KeyCode::Char(' ') => {
-                    self.state = AppState::Inspecting;
-                    self.countdown.start();
-                }
                 KeyCode::Char('q') => {
                     self.state = AppState::ShouldQuit;
                     self.history.save_csv(HISTORY_FILE_PATH);
+                }
+                KeyCode::Char('c') => self.history.clear(),
+                KeyCode::Char('s') => self.history.save_csv(HISTORY_FILE_PATH),
+                KeyCode::Char('r') => self.scramble = Scramble::new_rand(SCRAMBLE_LEN),
+                KeyCode::Char('x') => self.state = AppState::Confirm("pop"),
+                KeyCode::Char('u') => self.history.undo_pop(),
+                KeyCode::Char('d') => self.state = AppState::Confirm("dnf"),
+                KeyCode::Char('t') => self.state = AppState::Confirm("time"),
+                KeyCode::Char(' ') => {
+                    self.state = AppState::Inspecting;
+                    self.countdown.start();
                 }
                 _ => {}
             },
@@ -90,15 +92,27 @@ impl<'a> App<'a> {
                 self.history.push(&self.timer, &self.scramble, Penalty::No);
                 self.scramble = Scramble::new_rand(SCRAMBLE_LEN);
             }
-            AppState::Confirm("pop") => {
-                match key.code {
-                    KeyCode::Char('y') => {
+            AppState::Confirm(s) => match s {
+                "pop" => {
+                    if key.code == KeyCode::Char('y') {
                         self.history.pop();
                     }
-                    _ => {}
-                };
-                self.state = AppState::Idle;
-            }
+                    self.state = AppState::Idle;
+                }
+                "dnf" => {
+                    if key.code == KeyCode::Char('y') {
+                        self.history.penalize_last(Penalty::DNF);
+                    }
+                    self.state = AppState::Idle;
+                }
+                "time" => {
+                    if key.code == KeyCode::Char('y') {
+                        self.history.penalize_last(Penalty::Time);
+                    }
+                    self.state = AppState::Idle;
+                }
+                _ => {}
+            },
             _ => {}
         }
     }

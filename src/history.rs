@@ -153,6 +153,16 @@ impl History {
         self.entries.clear()
     }
 
+    pub fn penalize(&mut self, index: usize, penalty: Penalty) {
+        if let Some(last) = self.entries.get_mut(index) {
+            last.penalty = penalty;
+        }
+    }
+
+    pub fn penalize_last(&mut self, penalty: Penalty) {
+        self.penalize(self.entries.len() - 1, penalty)
+    }
+
     pub fn valid_entries(&self) -> Vec<&Entry> {
         self.entries
             .iter()
