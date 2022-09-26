@@ -66,7 +66,7 @@ impl<'a> App<'a> {
                     self.state = AppState::ShouldQuit;
                     self.history.save_csv(HISTORY_FILE_PATH);
                 }
-                KeyCode::Char('c') => self.history.clear(),
+                KeyCode::Char('c') => self.state = AppState::Confirm("clear"),
                 KeyCode::Char('s') => self.history.save_csv(HISTORY_FILE_PATH),
                 KeyCode::Char('r') => self.scramble = Scramble::new_rand(SCRAMBLE_LEN),
                 KeyCode::Char('x') => self.state = AppState::Confirm("pop"),
@@ -92,27 +92,33 @@ impl<'a> App<'a> {
                 self.history.push(&self.timer, &self.scramble, Penalty::No);
                 self.scramble = Scramble::new_rand(SCRAMBLE_LEN);
             }
-            AppState::Confirm(s) => match s {
-                "pop" => {
-                    if key.code == KeyCode::Char('y') {
-                        self.history.pop();
+            AppState::Confirm(s) => {
+                match s {
+                    "pop" => {
+                        if key.code == KeyCode::Char('y') {
+                            self.history.pop();
+                        }
                     }
-                    self.state = AppState::Idle;
-                }
-                "dnf" => {
-                    if key.code == KeyCode::Char('y') {
-                        self.history.penalize_last(Penalty::DNF);
+                    "dnf" => {
+                        if key.code == KeyCode::Char('y') {
+                            self.history.penalize_last(Penalty::DNF);
+                        }
                     }
-                    self.state = AppState::Idle;
-                }
-                "time" => {
-                    if key.code == KeyCode::Char('y') {
-                        self.history.penalize_last(Penalty::Time);
+                    "time" => {
+                        if key.code == KeyCode::Char('y') {
+                            self.history.penalize_last(Penalty::Time);
+                        }
                     }
-                    self.state = AppState::Idle;
+                    "clear" => {
+                        if key.code == KeyCode::Char('y') {
+                            self.timer.reset();
+                            self.history.clear();
+                        }
+                    }
+                    _ => {}
                 }
-                _ => {}
-            },
+                self.state = AppState::Idle;
+            }
             _ => {}
         }
     }

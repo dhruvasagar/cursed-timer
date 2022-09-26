@@ -31,6 +31,12 @@ impl Timer {
         self.result = self.time.elapsed().unwrap();
         self.state = State::Inactive;
     }
+
+    pub fn reset(&mut self) {
+        self.state = State::Inactive;
+        self.time = SystemTime::now();
+        self.result = Duration::from_secs(0);
+    }
 }
 
 use std::fmt;
