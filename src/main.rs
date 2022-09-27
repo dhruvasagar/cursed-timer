@@ -11,6 +11,7 @@ mod app;
 mod countdown;
 mod history;
 mod scramble;
+mod stats;
 mod timer;
 mod ui;
 

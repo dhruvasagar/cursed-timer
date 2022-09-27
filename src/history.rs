@@ -1,6 +1,6 @@
 use std::fmt;
 use std::num;
-use std::ops::{Add, Div};
+use std::ops::Add;
 use std::str;
 use std::time::Duration;
 
@@ -11,7 +11,7 @@ use csv;
 use crate::{scramble::Scramble, timer::Timer};
 
 #[derive(Clone)]
-pub struct SolveTime(Duration);
+pub struct SolveTime(pub Duration);
 
 impl str::FromStr for SolveTime {
     type Err = num::ParseIntError;
@@ -67,7 +67,7 @@ impl fmt::Display for Penalty {
 
 #[derive(Clone)]
 pub struct Entry {
-    time: SolveTime,
+    pub time: SolveTime,
     scramble: Scramble,
     date: chrono::DateTime<Utc>,
     penalty: Penalty,
@@ -171,76 +171,6 @@ impl History {
             .iter()
             .filter(|entry| entry.penalty == Penalty::No || entry.penalty == Penalty::Time)
             .collect()
-    }
-
-    pub fn stats(&self) -> Vec<Vec<String>> {
-        let entries = self.valid_entries();
-        let size = entries.len() as u32;
-        if size == 0 {
-            return vec![];
-        }
-
-        let mut best: Duration = Duration::from_secs(0);
-        let mut tot: Duration = Duration::from_secs(0);
-
-        let mut ao5: Duration = Duration::from_secs(0);
-        let mut cao5: Duration = Duration::from_secs(0);
-        let mut lao5: Vec<Duration> = vec![];
-
-        let mut ao12: Duration = Duration::from_secs(0);
-        let mut cao12: Duration = Duration::from_secs(0);
-        let mut lao12: Vec<Duration> = vec![];
-        // let mut ao50 = 0;
-        // let mut ao100 = 0;
-        let SolveTime(last) = entries.last().unwrap().time;
-        for entry in entries.iter() {
-            let SolveTime(d) = entry.time;
-            if best == Duration::from_secs(0) || best > d {
-                best = d;
-            }
-            tot = tot.add(d);
-            lao5.push(d);
-            if lao5.len() == 5 {
-                let sd = lao5.iter().fold(Duration::from_secs(0), |a, &l| a.add(l));
-                cao5 = sd.div(5);
-                if ao5 == Duration::from_secs(0) || sd.div(5) < ao5 {
-                    ao5 = sd.div(5);
-                }
-                lao5.remove(0);
-            }
-            lao12.push(d);
-            if lao12.len() == 12 {
-                let sd = lao12.iter().fold(Duration::from_secs(0), |a, &l| a.add(l));
-                cao12 = sd.div(12);
-                if ao12 == Duration::from_secs(0) || sd.div(12) < ao12 {
-                    ao12 = sd.div(12);
-                }
-                lao12.remove(0);
-            }
-        }
-        vec![
-            vec![
-                String::from("Time"),
-                format!("{:?}", last),
-                format!("{:?}", best),
-            ],
-            vec![
-                String::from("Ao5"),
-                format!("{:?}", cao5),
-                format!("{:?}", ao5),
-            ],
-            vec![
-                String::from("Ao12"),
-                format!("{:?}", cao12),
-                format!("{:?}", ao12),
-            ],
-            vec![],
-            vec![
-                String::from("Average"),
-                String::from(""),
-                format!("{:?}", tot.div(size)),
-            ],
-        ]
     }
 
     pub fn points(&self) -> (Vec<(f64, f64)>, [f64; 2], [f64; 2]) {

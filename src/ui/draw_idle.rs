@@ -1,4 +1,4 @@
-use crate::app::App;
+use crate::{app::App, stats::stats};
 use cfonts::{render, Fonts, Options};
 use chrono::NaiveDateTime;
 use tui::{
@@ -65,12 +65,17 @@ pub fn draw_idle<B: Backend>(f: &mut Frame<B>, app: &App) {
         .title("Stats")
         .title_alignment(Alignment::Center)
         .borders(Borders::ALL);
-    let stats = app.history.stats();
+    let stats = stats(app.history.valid_entries());
     let mut rows: Vec<Row> = vec![];
     for stat in stats.iter() {
         let mut row: Vec<Cell> = vec![];
         for val in stat.iter() {
-            row.push(Cell::from(val.as_str()));
+            let cell = if val.as_str() == "0ns" {
+                "-"
+            } else {
+                val.as_str()
+            };
+            row.push(Cell::from(cell));
         }
         rows.push(Row::new(row));
     }
