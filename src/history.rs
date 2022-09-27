@@ -86,17 +86,21 @@ impl History {
             entries: Vec::with_capacity(VEC_START_SIZE),
             deleted: Vec::new(),
         };
-        let mut reader = csv::Reader::from_path(file_path).unwrap();
-        for result in reader.records() {
-            if let Ok(record) = result {
-                history.entries.push(Entry {
-                    time: record[0].parse::<SolveTime>().unwrap(),
-                    scramble: record[1].parse::<Scramble>().unwrap(),
-                    date: record[2].parse::<chrono::DateTime<Utc>>().unwrap(),
-                    penalty: record[3].parse::<Penalty>().unwrap(),
-                })
+        match csv::Reader::from_path(file_path) {
+            Ok(mut reader) => {
+                for result in reader.records() {
+                    if let Ok(record) = result {
+                        history.entries.push(Entry {
+                            time: record[0].parse::<SolveTime>().unwrap(),
+                            scramble: record[1].parse::<Scramble>().unwrap(),
+                            date: record[2].parse::<chrono::DateTime<Utc>>().unwrap(),
+                            penalty: record[3].parse::<Penalty>().unwrap(),
+                        })
+                    }
+                }
             }
-        }
+            Err(_) => {}
+        };
         history
     }
 
