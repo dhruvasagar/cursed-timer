@@ -4,6 +4,7 @@ use crossterm::{
     execute,
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
+use std::fs::OpenOptions;
 use std::io;
 use tui::{backend::CrosstermBackend, Terminal};
 
@@ -16,11 +17,19 @@ mod timer;
 mod ui;
 
 fn main() -> io::Result<()> {
+    let file = OpenOptions::new()
+        .append(true)
+        .create(true)
+        .open("cursed-timer.log")?;
+    tracing_subscriber::fmt().with_writer(file).init();
+
     enable_raw_mode()?;
     let mut stdout = io::stdout();
-    execute!(stdout, EnterAlternateScreen, EnableMouseCapture)?;
+    execute!(stdout, EnterAlternateScreen, EnableMouseCapture,)?;
     let backend = CrosstermBackend::new(stdout);
     let mut terminal = Terminal::new(backend)?;
+    terminal.clear()?;
+
     let mut app = App::new("Rubik Cube Timer");
     let res = app.run(&mut terminal);
 
@@ -29,7 +38,7 @@ fn main() -> io::Result<()> {
     execute!(
         terminal.backend_mut(),
         LeaveAlternateScreen,
-        DisableMouseCapture
+        DisableMouseCapture,
     )?;
     terminal.show_cursor()?;
 
