@@ -4,9 +4,11 @@ use crossterm::{
     execute,
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
-use std::fs::OpenOptions;
 use std::io;
 use tui::{backend::CrosstermBackend, Terminal};
+
+#[cfg(feature = "debug")]
+use std::fs::OpenOptions;
 
 mod app;
 mod countdown;
@@ -17,11 +19,15 @@ mod timer;
 mod ui;
 
 fn main() -> io::Result<()> {
-    let file = OpenOptions::new()
-        .append(true)
-        .create(true)
-        .open("cursed-timer.log")?;
-    tracing_subscriber::fmt().with_writer(file).init();
+    #[cfg(feature = "debug")]
+    tracing_subscriber::fmt()
+        .with_writer(
+            OpenOptions::new()
+                .append(true)
+                .create(true)
+                .open("cursed-timer.log")?,
+        )
+        .init();
 
     enable_raw_mode()?;
     let mut stdout = io::stdout();

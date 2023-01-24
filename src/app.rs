@@ -78,6 +78,7 @@ impl<'a> App<'a> {
                 KeyCode::Char('d') => self.state = AppState::Confirm("dnf"),
                 KeyCode::Char('t') => self.state = AppState::Confirm("time"),
                 KeyCode::Char(' ') => {
+                    #[cfg(feature = "debug")]
                     tracing::info!("Starting Inspection");
                     self.state = AppState::Inspecting;
                     self.countdown.start();
@@ -86,6 +87,7 @@ impl<'a> App<'a> {
             },
             AppState::Inspecting => {
                 if key.code == KeyCode::Char(' ') {
+                    #[cfg(feature = "debug")]
                     tracing::info!("Starting KeyHold");
                     self.key_hold.start();
                     self.state = AppState::KeyHold;
@@ -95,6 +97,7 @@ impl<'a> App<'a> {
                 }
             }
             AppState::KeyHold => {
+                #[cfg(feature = "debug")]
                 tracing::info!("Polling for space");
                 while let Ok(true) = crossterm::event::poll(Duration::from_millis(100)) {
                     if self.countdown.done() {

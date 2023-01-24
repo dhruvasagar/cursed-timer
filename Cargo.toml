@@ -17,6 +17,9 @@ chrono = "0.4.22"
 crossterm = "0.25.0"
 csv = "1.1.6"
 rand = "0.8.5"
-tracing = "0.1.37"
-tracing-subscriber = "0.3.16"
+tracing = { version = "0.1.37", optional = true }
+tracing-subscriber = { version = "0.3.16", optional = true }
 tui = "0.19.0"
+
+[features]
+debug = ["tracing", "tracing-subscriber"]
