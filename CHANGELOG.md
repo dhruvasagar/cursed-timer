@@ -9,11 +9,16 @@ Note: In this file, do not use the hard wrap in the middle of a sentence for com
 
 ## [0.1.1] - 26-09-2022
 
-    * Minor refactor
-    * Confirm before clear
+- Minor refactor
+- Confirm before clear
 
 ## [0.2.2] - 27-09-2022
 
-    * Refactored Stats, added more averages of 50 and 100
-    * Improved layout, moved Stats and Chart to right side
-    * Fixed crash when csv file is missing
+- Refactored Stats, added more averages of 50 and 100
+- Improved layout, moved Stats and Chart to right side
+- Fixed crash when csv file is missing
+
+## [0.3.0] - 24-01-2023
+
+- Add optional logging when `debug` feature is enabled
+- Switch to requiring long key-press during inspection to start timer
