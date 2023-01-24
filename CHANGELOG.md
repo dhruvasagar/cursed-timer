@@ -22,3 +22,7 @@ Note: In this file, do not use the hard wrap in the middle of a sentence for com
 
 - Add optional logging when `debug` feature is enabled
 - Switch to requiring long key-press during inspection to start timer
+
+## [0.3.1] - 24-01-2023
+
+- Improved documentation in README.md for Releases
