@@ -13,11 +13,13 @@ use tui::{backend::Backend, Terminal};
 const SCRAMBLE_LEN: usize = 25;
 const HISTORY_FILE_PATH: &str = "history.csv";
 const WCA_INSPECTION: u64 = 16;
+const KEY_HOLD: u64 = 3;
 
 #[derive(PartialEq, Eq)]
 pub enum AppState<'a> {
     Idle,
     Inspecting,
+    KeyHold,
     Timer,
     ShowHelp,
     ShouldQuit,
@@ -32,6 +34,7 @@ pub struct App<'a> {
     pub scramble: Scramble,
     pub state: AppState<'a>,
     pub countdown: Countdown,
+    pub key_hold: Countdown,
 }
 
 impl<'a> App<'a> {
@@ -44,10 +47,11 @@ impl<'a> App<'a> {
             scramble: Scramble::new_rand(SCRAMBLE_LEN),
             history: History::from_csv(HISTORY_FILE_PATH),
             countdown: Countdown::new(Duration::from_secs(WCA_INSPECTION)),
+            key_hold: Countdown::new(Duration::from_secs(KEY_HOLD)),
         }
     }
 
-    pub fn on_key(&mut self, key: KeyEvent) {
+    pub fn on_key<B: Backend>(&mut self, key: KeyEvent, terminal: &mut Terminal<B>) {
         if key.code == KeyCode::Char('c') && key.modifiers == KeyModifiers::CONTROL {
             self.state = AppState::ShouldQuit;
             return;
@@ -74,6 +78,8 @@ impl<'a> App<'a> {
                 KeyCode::Char('d') => self.state = AppState::Confirm("dnf"),
                 KeyCode::Char('t') => self.state = AppState::Confirm("time"),
                 KeyCode::Char(' ') => {
+                    #[cfg(feature = "debug")]
+                    tracing::info!("Starting Inspection");
                     self.state = AppState::Inspecting;
                     self.countdown.start();
                 }
@@ -81,10 +87,47 @@ impl<'a> App<'a> {
             },
             AppState::Inspecting => {
                 if key.code == KeyCode::Char(' ') {
-                    self.state = AppState::Timer;
-                    self.countdown.stop();
-                    self.timer.start();
+                    #[cfg(feature = "debug")]
+                    tracing::info!("Starting KeyHold");
+                    self.key_hold.start();
+                    self.state = AppState::KeyHold;
+                    // self.state = AppState::Timer;
+                    // self.countdown.stop();
+                    // self.timer.start();
                 }
+            }
+            AppState::KeyHold => {
+                #[cfg(feature = "debug")]
+                tracing::info!("Polling for space");
+                while let Ok(true) = crossterm::event::poll(Duration::from_millis(100)) {
+                    if self.countdown.done() {
+                        return;
+                    }
+
+                    terminal.draw(|f| ui::draw(f, self)).unwrap();
+                    if let Ok(Event::Key(k)) = event::read() {
+                        if k.code != KeyCode::Char(' ') {
+                            break;
+                        }
+                    }
+                }
+
+                if !self.key_hold.done() {
+                    if !self.countdown.done() {
+                        // go back to inspecting
+                        self.state = AppState::Inspecting;
+                    } else {
+                        self.state = AppState::Idle;
+                    }
+                    // did not hold long enough
+                    self.key_hold.stop();
+                    return;
+                }
+
+                self.state = AppState::Timer;
+                self.key_hold.stop();
+                self.countdown.stop();
+                self.timer.start();
             }
             AppState::Timer => {
                 self.state = AppState::Idle;
@@ -131,13 +174,23 @@ impl<'a> App<'a> {
             let timeout = self
                 .tick_rate
                 .checked_sub(last_tick.elapsed())
-                .unwrap_or_else(|| Duration::from_secs(0));
+                .unwrap_or_else(|| Duration::from_millis(100));
             if crossterm::event::poll(timeout)? {
                 if let Event::Key(key) = event::read()? {
-                    self.on_key(key)
+                    self.on_key(key, terminal)
                 }
             }
-            if self.state == AppState::Inspecting && self.countdown.done() {
+            if (self.state == AppState::Inspecting || self.state == AppState::KeyHold)
+                && self.countdown.done()
+            {
+                // consume extra space press
+                while let Ok(true) = crossterm::event::poll(Duration::from_millis(100)) {
+                    if let Ok(Event::Key(k)) = event::read() {
+                        if k.code != KeyCode::Char(' ') {
+                            break;
+                        }
+                    }
+                }
                 self.state = AppState::Idle;
                 self.countdown.stop();
                 self.history.push(&self.timer, &self.scramble, Penalty::DNS);

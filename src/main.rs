@@ -7,6 +7,9 @@ use crossterm::{
 use std::io;
 use tui::{backend::CrosstermBackend, Terminal};
 
+#[cfg(feature = "debug")]
+use std::fs::OpenOptions;
+
 mod app;
 mod countdown;
 mod history;
@@ -16,11 +19,23 @@ mod timer;
 mod ui;
 
 fn main() -> io::Result<()> {
+    #[cfg(feature = "debug")]
+    tracing_subscriber::fmt()
+        .with_writer(
+            OpenOptions::new()
+                .append(true)
+                .create(true)
+                .open("cursed-timer.log")?,
+        )
+        .init();
+
     enable_raw_mode()?;
     let mut stdout = io::stdout();
-    execute!(stdout, EnterAlternateScreen, EnableMouseCapture)?;
+    execute!(stdout, EnterAlternateScreen, EnableMouseCapture,)?;
     let backend = CrosstermBackend::new(stdout);
     let mut terminal = Terminal::new(backend)?;
+    terminal.clear()?;
+
     let mut app = App::new("Rubik Cube Timer");
     let res = app.run(&mut terminal);
 
@@ -29,7 +44,7 @@ fn main() -> io::Result<()> {
     execute!(
         terminal.backend_mut(),
         LeaveAlternateScreen,
-        DisableMouseCapture
+        DisableMouseCapture,
     )?;
     terminal.show_cursor()?;
 

@@ -1,4 +1,4 @@
-use crate::app::App;
+use crate::{app::App, countdown::CountdownState};
 use cfonts::{render, Fonts, Options};
 use tui::{
     backend::Backend,
@@ -25,8 +25,11 @@ pub fn draw_inspecting<B: Backend>(f: &mut Frame<B>, app: &App) {
     });
     let mut timer_text = Text::styled(
         format!("{}", timer_font.text),
-        Style::default().fg(Color::LightGreen),
+        Style::default().fg(Color::White),
     );
+    if app.key_hold.state == CountdownState::Start {
+        timer_text.patch_style(Style::default().fg(Color::Green));
+    }
     if app.countdown.warn() {
         timer_text.patch_style(Style::default().fg(Color::LightRed));
     }
@@ -36,7 +39,7 @@ pub fn draw_inspecting<B: Backend>(f: &mut Frame<B>, app: &App) {
     f.render_widget(paragraph, chunks[0]);
 
     let help_block = Block::default().borders(Borders::ALL);
-    let text = vec![Spans::from("Press <Space> to Start Timer")];
+    let text = vec![Spans::from("Press <Space> for 3 seconds to Start Timer")];
     let paragraph = Paragraph::new(text)
         .block(help_block)
         .alignment(Alignment::Center);
