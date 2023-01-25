@@ -30,3 +30,7 @@ Note: In this file, do not use the hard wrap in the middle of a sentence for com
 ## [0.3.2] - 25-01-2023
 
 - Reduced hold time to 2s
+
+## [0.3.3] - 25-01-2023
+
+- Fix Cargo.lock version
