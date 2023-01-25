@@ -13,7 +13,7 @@ use tui::{backend::Backend, Terminal};
 const SCRAMBLE_LEN: usize = 25;
 const HISTORY_FILE_PATH: &str = "history.csv";
 const WCA_INSPECTION: u64 = 16;
-const KEY_HOLD: u64 = 3;
+const KEY_HOLD: u64 = 2;
 
 #[derive(PartialEq, Eq)]
 pub enum AppState<'a> {

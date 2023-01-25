@@ -1,4 +1,4 @@
-# Cursed Timer v0.3.1
+# Cursed Timer v0.3.2
 
 A simple Console Timer Application for Recording Rubik Cube Solving Times
 

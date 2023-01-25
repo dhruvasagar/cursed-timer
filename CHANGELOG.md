@@ -26,3 +26,7 @@ Note: In this file, do not use the hard wrap in the middle of a sentence for com
 ## [0.3.1] - 24-01-2023
 
 - Improved documentation in README.md for Releases
+
+## [0.3.2] - 25-01-2023
+
+- Reduced hold time to 2s
