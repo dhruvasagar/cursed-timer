@@ -78,10 +78,15 @@ impl<'a> App<'a> {
                 KeyCode::Char('d') => self.state = AppState::Confirm("dnf"),
                 KeyCode::Char('t') => self.state = AppState::Confirm("time"),
                 KeyCode::Char(' ') => {
-                    #[cfg(feature = "debug")]
-                    tracing::info!("Starting Inspection");
-                    self.state = AppState::Inspecting;
-                    self.countdown.start();
+                    if key.modifiers == KeyModifiers::CONTROL {
+                        self.timer.start();
+                        self.state = AppState::Timer;
+                    } else {
+                        #[cfg(feature = "debug")]
+                        tracing::info!("Starting Inspection");
+                        self.state = AppState::Inspecting;
+                        self.countdown.start();
+                    }
                 }
                 _ => {}
             },
