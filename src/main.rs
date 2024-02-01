@@ -11,6 +11,7 @@ use tui::{backend::CrosstermBackend, Terminal};
 use std::fs::OpenOptions;
 
 mod app;
+mod config;
 mod countdown;
 mod history;
 mod scramble;
