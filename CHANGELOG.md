@@ -34,3 +34,7 @@ Note: In this file, do not use the hard wrap in the middle of a sentence for com
 ## [0.3.3] - 25-01-2023
 
 - Fix Cargo.lock version
+
+## 0.3.4 - 29-01-2024
+
+- Add new key binding <kbd><C-Space></kbd> to start timer without WCA inspection
