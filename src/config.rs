@@ -2,7 +2,6 @@ use dirs;
 use serde::{Deserialize, Serialize};
 use std::fs::File;
 use std::io::Read;
-use std::path::{Path, PathBuf};
 use toml;
 
 #[derive(Debug, Serialize, Deserialize)]
