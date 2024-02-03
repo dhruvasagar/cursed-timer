@@ -39,7 +39,7 @@ pub struct CubeConfig {
 
 impl CubeConfig {
     /// Returns the config directory used for the configuration.
-    /// @return PathBuf: the config directory
+    /// @return Option<String>: the config directory
     pub fn get_history_path() -> Option<String> {
         #[cfg(any(target_os = "macos", target_os = "linux"))]
         {
@@ -88,7 +88,6 @@ impl CubeConfig {
     pub fn new() -> Option<CubeConfig> {
         let path = CubeConfig::get_config_path()?;
 
-        println!("{:?}", path);
         if File::open(&path).is_err() {
             let mut file = File::create(path.clone()).unwrap();
             let _ = file.write(DEFAULT_CONFIG.as_bytes());
