@@ -1,5 +1,5 @@
 use crate::{
-    config::Config,
+    config::CubeConfig,
     countdown::Countdown,
     history::{History, Penalty},
     scramble::Scramble,
@@ -30,19 +30,20 @@ pub struct App<'a> {
     pub state: AppState<'a>,
     pub countdown: Countdown,
     pub key_hold: Countdown,
-    pub config: Config,
+    pub config: CubeConfig,
 }
 
 impl<'a> App<'a> {
     pub fn new(title: &'a str) -> Self {
-        let config = Config::new().unwrap();
+        let config = CubeConfig::new().unwrap();
+
         App {
             title,
             timer: Timer::new(),
             state: AppState::Idle,
             tick_rate: Duration::from_millis(100),
-            scramble: Scramble::new_rand(config.scramble.length),
-            history: History::from_csv(&Config::get_history_path().unwrap()),
+            scramble: Scramble::new_rand(config.inspection.length),
+            history: History::from_csv(&CubeConfig::get_history_path().unwrap()),
             countdown: Countdown::new(Duration::from_secs(config.inspection.length as u64)),
             key_hold: Countdown::new(Duration::from_secs(config.inspection.key_hold as u64)),
             config,
@@ -66,10 +67,13 @@ impl<'a> App<'a> {
                 }
                 KeyCode::Char('q') => {
                     self.state = AppState::ShouldQuit;
-                    self.history.save_csv(&Config::get_history_path().unwrap());
+                    self.history
+                        .save_csv(&CubeConfig::get_history_path().unwrap());
                 }
                 KeyCode::Char('c') => self.state = AppState::Confirm("clear"),
-                KeyCode::Char('s') => self.history.save_csv(&Config::get_history_path().unwrap()),
+                KeyCode::Char('s') => self
+                    .history
+                    .save_csv(&CubeConfig::get_history_path().unwrap()),
                 KeyCode::Char('r') => {
                     self.scramble = Scramble::new_rand(self.config.scramble.length)
                 }
