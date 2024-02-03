@@ -1,8 +1,7 @@
 use dirs;
 use serde::{Deserialize, Serialize};
 use std::fs::File;
-use std::io::Read;
-use toml;
+use std::io::{Read, Write};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub enum ConfigError {
@@ -11,6 +10,9 @@ pub enum ConfigError {
     NoConfigFile,
     BadTOMLFormat,
     BadConfigPath,
+    FailedCreatingConfig,
+    FailedWritingConfig,
+    FailedReadingConfig,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -24,22 +26,18 @@ pub struct InspectionConfig {
     pub key_hold: usize,
 }
 
+const DEFAULT_CONFIG: &str = "[scramble]
+length = 16
+
+[inspection]
+length = 16
+key_hold = 2
+";
+
 /// Models the config file found in the app config directory
-/// Example config.toml:
-///
-/// [scramble]
-/// length = 16 # Length of scramble.
-///
-/// [inspection]
-/// length = 16 # length of inspection in seconds.
-/// key_hold = 2 # how long is needed to start the timer in seconds.
-///
-///
-///
+/// see DEFAULT_CONFIG for example config.toml.
 ///
 ///  TODO: Add More Config Options
-///
-///
 ///
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Config {
@@ -108,9 +106,24 @@ impl Config {
     /// @return: Config
     pub fn new() -> Result<Config, ConfigError> {
         let config_path = Config::get_config_path()?;
-        let mut file = File::open(config_path).map_err(|_| ConfigError::NoConfigFile)?;
-        let mut contents = String::new();
-        let _ = file.read_to_string(&mut contents);
-        return toml::de::from_str(&contents).map_err(|_| ConfigError::BadTOMLFormat);
+
+        let contents = match File::open(&config_path) {
+            Ok(mut file) => {
+                let mut cnts = String::new();
+                file.read_to_string(&mut cnts)
+                    .map_err(|_| ConfigError::FailedReadingConfig)?;
+                cnts
+            }
+            Err(_) => {
+                let mut file_new =
+                    File::create(config_path).map_err(|_| ConfigError::FailedCreatingConfig)?;
+                file_new
+                    .write_all(&DEFAULT_CONFIG.as_bytes())
+                    .map_err(|_| ConfigError::FailedWritingConfig)?;
+                String::from(DEFAULT_CONFIG)
+            }
+        };
+
+        toml::de::from_str(&contents).map_err(|_| ConfigError::BadTOMLFormat)
     }
 }
