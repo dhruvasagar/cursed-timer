@@ -14,9 +14,13 @@ authors = ["Dhruva Sagar <dhruva.sagar@gmail.com>"]
 [dependencies]
 cfonts = "1.1.0"
 chrono = "0.4.22"
+config = "0.14.0"
 crossterm = "0.25.0"
 csv = "1.1.6"
+dirs = "5.0.1"
 rand = "0.8.5"
+serde = "1.0.196"
+serde_derive = "1.0.196"
 tracing = { version = "0.1.37", optional = true }
 tracing-subscriber = { version = "0.3.16", optional = true }
 tui = "0.19.0"

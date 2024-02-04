@@ -1,4 +1,5 @@
 use crate::{
+    config::CubeConfig,
     countdown::Countdown,
     history::{History, Penalty},
     scramble::Scramble,
@@ -10,11 +11,6 @@ use std::io;
 use std::time::{Duration, Instant};
 use tui::{backend::Backend, Terminal};
 
-const SCRAMBLE_LEN: usize = 25;
-const HISTORY_FILE_PATH: &str = "history.csv";
-const WCA_INSPECTION: u64 = 16;
-const KEY_HOLD: u64 = 2;
-
 #[derive(PartialEq, Eq)]
 pub enum AppState<'a> {
     Idle,
@@ -25,7 +21,6 @@ pub enum AppState<'a> {
     ShouldQuit,
     Confirm(&'a str),
 }
-
 pub struct App<'a> {
     pub title: &'a str,
     pub tick_rate: Duration,
@@ -35,19 +30,23 @@ pub struct App<'a> {
     pub state: AppState<'a>,
     pub countdown: Countdown,
     pub key_hold: Countdown,
+    pub config: CubeConfig,
 }
 
 impl<'a> App<'a> {
     pub fn new(title: &'a str) -> Self {
+        let config = CubeConfig::new().unwrap();
+
         App {
             title,
             timer: Timer::new(),
             state: AppState::Idle,
             tick_rate: Duration::from_millis(100),
-            scramble: Scramble::new_rand(SCRAMBLE_LEN),
-            history: History::from_csv(HISTORY_FILE_PATH),
-            countdown: Countdown::new(Duration::from_secs(WCA_INSPECTION)),
-            key_hold: Countdown::new(Duration::from_secs(KEY_HOLD)),
+            scramble: Scramble::new_rand(config.inspection.length),
+            history: History::from_csv(&CubeConfig::get_history_path().unwrap()),
+            countdown: Countdown::new(Duration::from_secs(config.inspection.length as u64)),
+            key_hold: Countdown::new(Duration::from_secs(config.inspection.key_hold as u64)),
+            config,
         }
     }
 
@@ -68,11 +67,16 @@ impl<'a> App<'a> {
                 }
                 KeyCode::Char('q') => {
                     self.state = AppState::ShouldQuit;
-                    self.history.save_csv(HISTORY_FILE_PATH);
+                    self.history
+                        .save_csv(&CubeConfig::get_history_path().unwrap());
                 }
                 KeyCode::Char('c') => self.state = AppState::Confirm("clear"),
-                KeyCode::Char('s') => self.history.save_csv(HISTORY_FILE_PATH),
-                KeyCode::Char('r') => self.scramble = Scramble::new_rand(SCRAMBLE_LEN),
+                KeyCode::Char('s') => self
+                    .history
+                    .save_csv(&CubeConfig::get_history_path().unwrap()),
+                KeyCode::Char('r') => {
+                    self.scramble = Scramble::new_rand(self.config.scramble.length)
+                }
                 KeyCode::Char('x') => self.state = AppState::Confirm("pop"),
                 KeyCode::Char('u') => self.history.undo_pop(),
                 KeyCode::Char('d') => self.state = AppState::Confirm("dnf"),
@@ -138,7 +142,7 @@ impl<'a> App<'a> {
                 self.state = AppState::Idle;
                 self.timer.stop();
                 self.history.push(&self.timer, &self.scramble, Penalty::No);
-                self.scramble = Scramble::new_rand(SCRAMBLE_LEN);
+                self.scramble = Scramble::new_rand(self.config.scramble.length);
             }
             AppState::Confirm(s) => {
                 match s {
@@ -199,7 +203,7 @@ impl<'a> App<'a> {
                 self.state = AppState::Idle;
                 self.countdown.stop();
                 self.history.push(&self.timer, &self.scramble, Penalty::DNS);
-                self.scramble = Scramble::new_rand(SCRAMBLE_LEN);
+                self.scramble = Scramble::new_rand(self.config.scramble.length);
             }
             if last_tick.elapsed() >= self.tick_rate {
                 last_tick = Instant::now();
